@@ -1,7 +1,7 @@
 const express=require('express');
 const cors=require('cors')
 const bodyParser = require('body-parser')
-const category = require('./middleware/category');
+const category = require('./model/category');
 const mongoose = require('mongoose');
 const multer=require('multer')
 
@@ -40,5 +40,5 @@ try{
     });}
 
 })
-app.listen(3000, () => console.log('سرور در حال اجرا در پورت 3000'));
+app.listen(5000, () => console.log('سرور در حال اجرا در پورت 3000'));
 
