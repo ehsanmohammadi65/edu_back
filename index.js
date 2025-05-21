@@ -4,41 +4,73 @@ const bodyParser = require('body-parser')
 const category = require('./model/category');
 const mongoose = require('mongoose');
 const multer=require('multer')
+const fs = require('fs');
+const path = require('path');
 
 // اتصال به MongoDB
-mongoose.connect('mongodb://localhost:27017/myapp', {
+mongoose.connect('mongodb://localhost:27017/edu', {
   useNewUrlParser: true,
   useUnifiedTopology: true
 });
 const app = express()
-app.use(bodyParser.json());
+
 app.use(cors());
 // پیکربندی multer برای آپلود عکس
-const upload = multer({ dest: 'uploads/img/cat' });
+// ایجاد پوشه اگر وجود نداشته باشد
+const uploadDir = 'uploads/img/cat';
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir, { recursive: true });
+}
+// پیکربندی multer
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, uploadDir);
+  },
+  filename: function (req, file, cb) {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
+  }
+});
+const upload = multer({ storage: storage });
 
-app.use('/categoryset',async(req,res)=>{
-try{
-    const {title,slug,img,parrent} =req.body;
+app.post('/categoryset', upload.single('image'), async (req, res) => {
+  try {
+    console.log('Received body:', req.body);
+    console.log('Received file:', req.file);
 
-    const imgpatch = req.file ? `/uploads/${req.file.filename}` : undefined;
+    const { title, slug, parrent } = req.body;
+const imgPath = req.file ? `/uploads/img/cat/${req.file.filename}` : undefined;
 
-  const newCategory = new category({
+    const newCategory = new category({
       title,
       slug,
-      img: imgpatch,
+      img: imgPath,
       parrent
     });
-        await newCategory.save(); // ذخیره در دیتابیس
-   res.status(201).json({
+
+    await newCategory.save();
+    res.status(201).json({
       success: true,
-      data: newUser
+      data: newCategory
     });
   } catch (err) {
+    console.error('Server error:', err);
     res.status(400).json({
       success: false,
       error: err.message
-    });}
-
+    });
+  }
+});
+app.use('/categorylist',async (req, res) =>{
+  try {
+    const list = await category.find({}); // عملیات غیرهمزمان
+    console.log(list); // چاپ کردن داده‌ها در کنسول سرور
+    res.json({data:list}); // ارسال داده‌ها به کلاینت به صورت JSON
+  } catch (err) {
+    console.error('Error fetching categories:', err);
+    res.status(500).send('Server Error');
+  }
 })
+app.use(bodyParser.json());
 app.listen(5000, () => console.log('سرور در حال اجرا در پورت 3000'));
 
