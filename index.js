@@ -15,6 +15,7 @@ mongoose.connect('mongodb://localhost:27017/edu', {
 const app = express()
 
 app.use(cors());
+
 // پیکربندی multer برای آپلود عکس
 // ایجاد پوشه اگر وجود نداشته باشد
 const uploadDir = 'uploads/img/cat';
@@ -32,12 +33,10 @@ const storage = multer.diskStorage({
   }
 });
 const upload = multer({ storage: storage });
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 app.post('/categoryset', upload.single('image'), async (req, res) => {
   try {
-    console.log('Received body:', req.body);
-    console.log('Received file:', req.file);
-
     const { title, slug, parrent } = req.body;
 const imgPath = req.file ? `/uploads/img/cat/${req.file.filename}` : undefined;
 
@@ -72,5 +71,22 @@ app.use('/categorylist',async (req, res) =>{
   }
 })
 app.use(bodyParser.json());
+app.use('/uploads',express.static(path.join(__dirname,'uploads/img/')))
+
+
+app.use('/deletecategory',async(req,res)=>{
+const{id}=req.body
+  const newCategory = new category();
+
+  await newCategory.findByIdAndDelete(id);
+  await category.deleteMany({ parrent: req.params.id });
+
+  res.status(201).json({
+    success: true,
+    data: newCategory
+  });
+
+})
+
 app.listen(5000, () => console.log('سرور در حال اجرا در پورت 3000'));
 
