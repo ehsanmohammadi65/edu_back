@@ -34,6 +34,47 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage: storage });
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.post('/updatecategory', upload.single('image'), async (req, res) => {
+  try {
+    const { id, title, slug, parrent } = req.body;
+    console.log(req.body)
+
+    // پیدا کردن رکورد قبلی
+    const existingCategory = await category.findById(id);
+    if (!existingCategory) {
+      return res.status(404).json({ success: false, message: 'دسته‌بندی پیدا نشد' });
+    }
+
+    // بررسی اگر عکس جدید آمده و با قبلی فرق داشت
+    let imgPath = existingCategory.img;
+    if (req.file) {
+      const newImagePath = `/uploads/img/cat/${req.file.filename}`;
+
+      // اگر عکس قبلی وجود داشت و فرق داشت، حذفش کن
+      if (existingCategory.img && existingCategory.img !== newImagePath) {
+        const fullOldPath = path.join(__dirname, existingCategory.img);
+        if (fs.existsSync(fullOldPath)) {
+          fs.unlinkSync(fullOldPath);
+        }
+      }
+
+      imgPath = newImagePath;
+    }
+
+    // بروزرسانی اطلاعات
+    existingCategory.title = title;
+    existingCategory.slug = slug;
+    existingCategory.parrent = parrent;
+    existingCategory.img = imgPath;
+
+    await existingCategory.save();
+
+    res.status(200).json({ success: true, data: existingCategory });
+  } catch (err) {
+    console.error('خطا در بروزرسانی دسته‌بندی:', err);
+    res.status(500).json({ success: false, message: 'خطای سرور' });
+  }
+});
 
 app.post('/categoryset', upload.single('image'), async (req, res) => {
   try {
@@ -72,21 +113,39 @@ app.use('/categorylist',async (req, res) =>{
 })
 app.use(bodyParser.json());
 app.use('/uploads',express.static(path.join(__dirname,'uploads/img/')))
+app.post('/deletecategory', async (req, res) => {
+  console.log("okkkk")
+  const { id } = req.body;
+
+  try {
+    const cat = await category.findById(id);
+    if (!cat) {
+      return res.status(404).json({ success: false, message: 'دسته‌بندی پیدا نشد' });
+    }
+
+    // حذف عکس در صورت وجود
+    if (cat.img) {
+      const imagePath = path.join(__dirname, cat.img);
+      if (fs.existsSync(imagePath)) {
+        fs.unlinkSync(imagePath);
+      }
+    }
+
+    // حذف دسته‌بندی اصلی
+    await category.findByIdAndDelete(id);
+
+    // حذف زیرشاخه‌ها
+    await category.deleteMany({ parrent: id });
+
+    res.status(200).json({ success: true, message: 'با موفقیت حذف شد' });
+  } catch (err) {
+    console.error('خطا در حذف دسته‌بندی:', err);
+    res.status(500).json({ success: false, message: 'خطای سرور' });
+  }
+});
 
 
-app.use('/deletecategory',async(req,res)=>{
-const{id}=req.body
-  const newCategory = new category();
 
-  await newCategory.findByIdAndDelete(id);
-  await category.deleteMany({ parrent: req.params.id });
-
-  res.status(201).json({
-    success: true,
-    data: newCategory
-  });
-
-})
 
 app.listen(5000, () => console.log('سرور در حال اجرا در پورت 3000'));
 
