@@ -147,5 +147,5 @@ app.post('/deletecategory', async (req, res) => {
 
 
 
-app.listen(5000, () => console.log('سرور در حال اجرا در پورت 3000'));
+app.listen(5000, () => console.log('سرور در حال اجرا در پورت 5000'));
 
