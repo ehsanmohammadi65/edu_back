@@ -1,11 +1,13 @@
 const express=require('express');
 const cors=require('cors')
 const bodyParser = require('body-parser')
-const category = require('./model/category');
+const category = require('./models/category');
 const mongoose = require('mongoose');
 const multer=require('multer')
 const fs = require('fs');
 const path = require('path');
+const userRoutes=require('./routes/user')
+const teacherRoutes = require('./routes/teachers');
 
 // اتصال به MongoDB
 mongoose.connect('mongodb://localhost:27017/edu', {
@@ -143,9 +145,8 @@ app.post('/deletecategory', async (req, res) => {
     res.status(500).json({ success: false, message: 'خطای سرور' });
   }
 });
-
-
-
+app.use('/api/users', userRoutes);
+app.use('/api/teachers', teacherRoutes);
 
 app.listen(5000, () => console.log('سرور در حال اجرا در پورت 5000'));
 
