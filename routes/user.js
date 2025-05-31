@@ -7,8 +7,9 @@ require("dotenv").config();
 
 // Register
 router.post('/register', authenticate, authorize(['admin']), async (req, res) => {
+     console.log(req.body.user)
+
   try {
-    console.log(req.body.user)
     const userData = {
       name: req.body.user.name,
       family: req.body.user.family,
