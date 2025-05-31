@@ -13,6 +13,8 @@ const authenticate = async (req, res, next) => {
     if (!req.user) return res.status(404).json({ message: 'کاربر یافت نشد!' });
     next();
   } catch (err) {
+    console.log("warning user1")
+
     return res.status(403).json({ message: 'توکن نامعتبر است!' });
   }
 };
@@ -22,6 +24,7 @@ const authorize = (roles = []) => {
 
   return (req, res, next) => {
     if (!roles.includes(req.user.role)) {
+      console.log("warning user")
       return res.status(403).json({ message: 'دسترسی غیرمجاز!' });
     }
     next();

@@ -8,14 +8,38 @@ require("dotenv").config();
 // Register
 router.post('/register', authenticate, authorize(['admin']), async (req, res) => {
   try {
-    const user = new User(req.body);
-    await user.save();
+    console.log(req.body.user)
+    const userData = {
+      name: req.body.user.name,
+      family: req.body.user.family,
+      nationalCode: req.body.user.nationalCode, // اصلاح شده
+      mobile: req.body.user.mobile,
+      role: req.body.user.role,
+      createdAt: Date.now(), // اصلاح شده
+      active: true, // اصلاح شده
+      password: req.body.user.password,
+    };
+    
+    if(req.body.user._id){
+                const user = new User();
+
+    const update = await User.findByIdAndUpdate(req.body.user._id, req.body.user, { new: true });
+    res.status(201).json(update);
+
+    }else{
+          const user = new User(userData);
+              await user.save();
     res.status(201).json(user);
+
+    }
   } catch (err) {
-    res.status(400).json({ message: err.message });
+    console.error('Registration error:', err);
+    res.status(400).json({ 
+      message: err.message,
+      errors: err.errors // برای نمایش خطاهای اعتبارسنجی
+    });
   }
 });
-
 // Login
 router.post('/login', async (req, res) => {
   const { nationalCode, password } = req.body;
@@ -29,26 +53,18 @@ router.post('/login', async (req, res) => {
 });
 
 // Get all users (admin only)
-router.get('/', authenticate, authorize(['admin']), async (req, res) => {
+router.post('/', async (req, res) => {
+  console.log("ok")
   const users = await User.find();
+  console.log(users)
   res.json(users);
 });
 
-// Update user (admin only)
-router.put('/:id', authenticate, authorize(['admin']), async (req, res) => {
-  try {
-    const user = await User.findByIdAndUpdate(req.params.id, req.body, { new: true });
-    if (!user) return res.status(404).json({ message: 'User not found' });
-    res.json(user);
-  } catch (err) {
-    res.status(400).json({ message: err.message });
-  }
-});
 
 // Delete user (admin only)
-router.delete('/:id', authenticate, authorize(['admin']), async (req, res) => {
+router.post('/delete', authenticate, authorize(['admin']), async (req, res) => {
   try {
-    const user = await User.findByIdAndDelete(req.params.id);
+    const user = await User.findByIdAndDelete(req.req.user._id);
     if (!user) return res.status(404).json({ message: 'User not found' });
     res.json({ message: 'User deleted' });
   } catch (err) {
