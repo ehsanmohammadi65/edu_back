@@ -7,24 +7,24 @@ require("dotenv").config();
 
 // Register
 router.post('/register', authenticate, authorize(['admin']), async (req, res) => {
-     console.log(req.body.user)
+     console.log(req.body)
 
   try {
     const userData = {
-      name: req.body.user.name,
-      family: req.body.user.family,
-      nationalCode: req.body.user.nationalCode, // اصلاح شده
-      mobile: req.body.user.mobile,
-      role: req.body.user.role,
+      name: req.body.name,
+      family: req.body.family,
+      nationalCode: req.body.nationalCode, // اصلاح شده
+      mobile: req.body.mobile,
+      role: req.body.role,
       createdAt: Date.now(), // اصلاح شده
       active: true, // اصلاح شده
-      password: req.body.user.password,
+      password: req.body.password,
     };
     
-    if(req.body.user._id){
+    if(req.body._id){
                 const user = new User();
 
-    const update = await User.findByIdAndUpdate(req.body.user._id, req.body.user, { new: true });
+    const update = await User.findByIdAndUpdate(req.body._id, req.body, { new: true });
     res.status(201).json(update);
 
     }else{
@@ -54,7 +54,7 @@ router.post('/login', async (req, res) => {
 });
 
 // Get all users (admin only)
-router.post('/', async (req, res) => {
+router.post('/', authenticate, authorize(['admin']), async (req, res) => {
   console.log("ok")
   const users = await User.find();
   console.log(users)
@@ -65,7 +65,8 @@ router.post('/', async (req, res) => {
 // Delete user (admin only)
 router.post('/delete', authenticate, authorize(['admin']), async (req, res) => {
   try {
-    const user = await User.findByIdAndDelete(req.req.user._id);
+    const user = await User.findByIdAndDelete(req.body._id);
+
     if (!user) return res.status(404).json({ message: 'User not found' });
     res.json({ message: 'User deleted' });
   } catch (err) {
