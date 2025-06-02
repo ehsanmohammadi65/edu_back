@@ -17,19 +17,30 @@ const storage = multer.diskStorage({
 });
 
 const upload = multer({ storage });
-// 📌 ایجاد مدرس جدید
 router.post('/', authenticate, authorize('admin'), upload.single('photo'), async (req, res) => {
   try {
-    const teacher = new Teacher({
+    const data = {
       ...req.body,
       photo: req.file ? `/uploads/${req.file.filename}` : undefined
-    });
-    await teacher.save();
-    res.status(201).json({ message: 'مدرس ثبت شد', teacher });
+    };
+
+    if (req.body._id) {
+      const teacherup = await Teacher.findByIdAndUpdate(req.body._id, data, { new: true });
+      if (!teacherup) {
+        return res.status(404).json({ message: 'مدرس یافت نشد' });
+      }
+      res.status(201).json({ message: 'مدرس ویرایش شد', teacher: teacherup });
+    } else {
+      const teacher = new Teacher(data);
+      await teacher.save();
+      res.status(201).json({ message: 'مدرس ثبت شد', teacher });
+    }
+
   } catch (err) {
-    res.status(400).json({ message: 'خطا در ثبت مدرس', error: err.message });
+    res.status(400).json({ message: 'خطا در ثبت یا ویرایش مدرس', error: err.message });
   }
 });
+
 
 
 // 📌 دریافت لیست مدرس‌ها
