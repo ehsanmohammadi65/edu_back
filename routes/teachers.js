@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const Teacher = require('../models/teacher');
+const TeacherCV=require('../models/teachercv')
 const { authenticate, authorize } = require('../middleware/auth');
 const multer = require('multer');
 const path = require('path');
@@ -59,5 +60,28 @@ router.put('/:id', authenticate, authorize('admin'), async (req, res) => {
     res.status(400).json({ message: 'خطا در بروزرسانی', error: err.message });
   }
 });
+//ad CV Teacher
+router.post('/addcv',authenticate,authorize(['admin']),async(req,res)=>{
+    const data = {
+      ...req.body
+    };
+    console.log(data)
+   if (req.body.teacher_id) {
+    console.log("ok")
+        const filter = { teacher_id: req.body.teacher_id };
+   
+            if((await TeacherCV.find(filter)).length){
+                    const teacherup = await TeacherCV.updateMany(filter, data, { new: true });
+      res.status(201).json({ message: 'CV ویرایش شد', TeacherCV: teacherup });
 
+            }else{
+                const teachercv = new TeacherCV(data);
+      await teachercv.save();
+      res.status(201).json({ message: 'مدرس ثبت شد', teachercv });
+    }
+            }
+   
+      
+    
+})
 module.exports = router;
