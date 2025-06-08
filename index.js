@@ -8,6 +8,7 @@ const fs = require('fs');
 const path = require('path');
 const userRoutes=require('./routes/user')
 const teacherRoutes = require('./routes/teachers');
+const productRoutes = require('./routes/product');
 
 // اتصال به MongoDB
 mongoose.connect('mongodb://localhost:27017/edu', {
@@ -147,6 +148,7 @@ app.post('/deletecategory', async (req, res) => {
 });
 app.use('/api/users', userRoutes);
 app.use('/api/teachers', teacherRoutes);
+app.use('/api/products',productRoutes)
 
 app.listen(5000, () => console.log('سرور در حال اجرا در پورت 5000'));
 
