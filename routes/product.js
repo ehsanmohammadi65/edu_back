@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const Product = require('../models/product');
+const ProductChild=require('../models/productchild');
 const { authenticate, authorize } = require('../middleware/auth');
 const multer = require('multer');
 const path = require('path');
@@ -18,7 +19,6 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage });
 router.post('/', authenticate, authorize('admin'), upload.single('photo'), async (req, res) => {
- console.log('okkkkk')
   try {
     const data = {
       ...req.body,
@@ -50,7 +50,31 @@ router.get('/', authenticate, authorize(['admin', 'user']), async (req, res) => 
   const product = await Product.find();
   res.json(product);
 });
+router.post('/addchild',authenticate, authorize('admin'), upload.single('photo'), async (req, res) =>{
+    try {
+    const data = {
+      ...req.body,
+      photo: req.file ? `/uploads/${req.file.filename}` : undefined
+    };
+    console.log(data)
 
+    if (req.body._id) {
+      const productup = await ProductChild.findByIdAndUpdate(req.body._id, data, { new: true });
+      if (!productup) {
+        return res.status(404).json({ message: 'محصول یافت نشد' });
+      }
+      res.status(201).json({ message: 'محصول ویرایش شد', Products: productup });
+    } else {
+      const productChild = new ProductChild(data);
+      await productChild.save();
+      console.log({ message: 'محصول ثبت شد', productChild })
+      res.status(201).json({ message: 'محصول ثبت شد', productChild });
+    }
+
+  } catch (err) {
+    res.status(400).json({ message: 'خطا در ثبت یا ویرایش محصول', error: err.message });
+  }
+})
 
 
 module.exports = router;
