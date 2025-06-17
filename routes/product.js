@@ -50,11 +50,11 @@ router.get('/', authenticate, authorize(['admin', 'user']), async (req, res) => 
   const product = await Product.find();
   res.json(product);
 });
-router.post('/addchild',authenticate, authorize('admin'), upload.single('photo'), async (req, res) =>{
+router.post('/addchild',authenticate, authorize('admin'), upload.single('file'), async (req, res) =>{
     try {
     const data = {
       ...req.body,
-      photo: req.file ? `/uploads/${req.file.filename}` : undefined
+      photo: req.file ? `/uploads/product${req.file.filename}` : undefined
     };
     console.log(data)
 
