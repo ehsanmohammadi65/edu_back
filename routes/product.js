@@ -42,19 +42,24 @@ router.post('/', authenticate, authorize('admin'), upload.single('photo'), async
     res.status(400).json({ message: 'خطا در ثبت یا ویرایش محصول', error: err.message });
   }
 });
-
-
-
-// 📌 دریافت لیست مدرس‌ها
+// 📌 دریافت لیست محصولات
 router.get('/', authenticate, authorize(['admin', 'user']), async (req, res) => {
-  const product = await Product.find();
+const product = await Product.find();
+
   res.json(product);
 });
+router.post('/getprchild', authenticate, authorize(['admin', 'user']), async (req, res) => {
+   console.log(req.body)
+ const data={parrent:req.body.parrent}
+  const productChild = await ProductChild.find(data); 
+  res.json(productChild);
+});
+
 router.post('/addchild',authenticate, authorize('admin'), upload.single('file'), async (req, res) =>{
     try {
     const data = {
       ...req.body,
-      photo: req.file ? `/uploads/product${req.file.filename}` : undefined
+      file: req.file ?  `/uploads/product/${req.file.filename}` : undefined
     };
     console.log(data)
 
