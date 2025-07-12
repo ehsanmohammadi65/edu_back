@@ -1,2 +1,6 @@
 node_modules
-uploads/img/cat
+uploads/img/cat/*
+uploads/img/product/*
+uploads/img/teachers/*
+
+
