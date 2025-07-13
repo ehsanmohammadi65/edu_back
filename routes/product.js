@@ -43,7 +43,7 @@ router.post('/', authenticate, authorize('admin'), upload.single('photo'), async
   }
 });
 // 📌 دریافت لیست محصولات
-router.get('/', authenticate, authorize(['admin', 'user']), async (req, res) => {
+router.get('/', async (req, res) => {
 const product = await Product.find();
 
   res.json(product);
