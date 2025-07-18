@@ -22,7 +22,7 @@ router.post('/', authenticate, authorize('admin'), upload.single('photo'), async
   try {
     const data = {
       ...req.body,
-      photo: req.file ? `/uploads/${req.file.filename}` : undefined
+      photo: req.file ? `/uploads/teachers/${req.file.filename}` : undefined
     };
 
     if (req.body._id) {
@@ -83,5 +83,23 @@ router.post('/addcv',authenticate,authorize(['admin']),async(req,res)=>{
    
       
     
-})
+});
+router.use('/getcv', async (req, res) => {
+  try {
+    const { id } = req.query; // استفاده از query string
+    if (!id) {
+      return res.status(400).json({ message: 'شناسه مدرس ارسال نشده است.' });
+    }
+
+    const data = await TeacherCV.find({ teacher_id: id });
+    console.log(id);
+    res.json(data);
+  } catch (err) {
+    console.error('Error fetching CV:', err);
+    res.status(500).json({ message: 'خطا در دریافت اطلاعات CV', error: err.message });
+  }
+}
+    
+  
+)
 module.exports = router;

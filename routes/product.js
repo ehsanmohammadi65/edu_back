@@ -22,7 +22,7 @@ router.post('/', authenticate, authorize('admin'), upload.single('photo'), async
   try {
     const data = {
       ...req.body,
-      photo: req.file ? `/uploads/${req.file.filename}` : undefined
+      img: req.file ? `/uploads/product/${req.file.filename}` : undefined
     };
 
     if (req.body._id) {
@@ -44,8 +44,18 @@ router.post('/', authenticate, authorize('admin'), upload.single('photo'), async
 });
 // 📌 دریافت لیست محصولات
 router.get('/', async (req, res) => {
-const product = await Product.find();
 
+const  product = await Product.find();
+
+  res.json(product);
+});
+router.get('/:id', async (req, res) => {
+
+  const product=[]
+  if(req.params.id? true : false){
+     product.push( await Product.findById(req.params.id))
+
+  }
   res.json(product);
 });
 router.post('/getprchild', authenticate, authorize(['admin', 'user']), async (req, res) => {

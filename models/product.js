@@ -12,7 +12,11 @@ const dataSchema = new mongoose.Schema({
   teacher: { type: mongoose.Schema.Types.ObjectId, ref: 'Teacher', required: true },
   categore: { type: mongoose.Schema.Types.ObjectId, ref: 'Category', required: true },
   tag: [{ type: String }],
-  img: { type: Object, default: {} },
+  img: { 
+    type: String,
+    required: false, // اعتبارسنجی الزامی
+    trim: false // حذف فاصله‌های اضافه
+},
   price:{type:String,default:'0'}
 }, { timestamps: true });
 
